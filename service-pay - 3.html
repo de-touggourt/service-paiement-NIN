@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>بوابة تحيين البيانات</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src='https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js'></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary-color: #2575fc;
+      --secondary-color: #6a11cb;
+      --bg-light: #f8f9fa;
+      --text-dark: #333;
+      --input-height: 50px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: #fff;
+      width: 100%;
+      max-width: 600px;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      padding: 40px 30px;
+      transition: all 0.3s ease;
+    }
+
+    .header-section { text-align: center; margin-bottom: 30px; }
+    .header-logo-text { font-size: 14px; color: #666; font-weight: 700; margin-bottom: 5px; }
+    
+    .main-title {
+      font-size: 26px; font-weight: 800;
+      background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 25px;
+    }
+
+    label { 
+      display: block; 
+      margin-bottom: 8px; 
+      font-size: 14px; 
+      font-weight: 700; 
+      color: var(--text-dark);
+      text-align: center; 
+    }
+
+    input, select {
+      width: 100%; height: var(--input-height); padding: 0 15px;
+      border: 2px solid #e1e5eb; border-radius: 12px;
+      font-family: 'Cairo', sans-serif; font-size: 15px; font-weight: 600;
+      text-align: center; background-color: #fff; transition: all 0.3s ease;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(37, 117, 252, 0.1); outline: none;
+    }
+
+    .readonly-field { background-color: #f0f4f8; color: #555; border-color: #dbe2e8; cursor: not-allowed; }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      background: #fafbfc;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px dashed #ced4da;
+      margin-bottom: 30px;
+    }
+
+    .full-width { grid-column: span 2; }
+    .input-group { margin-bottom: 0; text-align: center; } 
+    .outer-group { margin-bottom: 20px; text-align: center; }
+    
+    .section-divider { position: relative; text-align: center; margin: 30px 0; }
+    .section-divider::before { content: ""; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: #e1e5eb; z-index: 1; }
+    .section-title { position: relative; background: #fff; padding: 0 15px; color: var(--primary-color); font-weight: 700; font-size: 16px; z-index: 2; }
+
+    .btn-main {
+      width: 100%; height: 55px;
+      background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+      color: white; border: none; border-radius: 12px;
+      font-size: 18px; font-weight: 700; cursor: pointer;
+      box-shadow: 0 10px 20px rgba(37, 117, 252, 0.2);
+      transition: transform 0.2s; font-family: 'Cairo', sans-serif;
+    }
+    .btn-main:hover { transform: translateY(-2px); }
+
+    /* تنسيق خاص لحقل رقم التعريف والكاميرا */
+    #ninField { border-color: #ff6b6b; background-color: #fff5f5; }
+
+    .input-icon-wrapper {
+      position: relative;
+      width: 100%;
+    }
+    
+    .input-icon-wrapper input {
+      padding-left: 45px; 
+    }
+
+    .camera-btn {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 20px; /* حجم الأيقونة */
+      color: #6a11cb; /* لون الأيقونة */
+      padding: 5px;
+      z-index: 10;
+      transition: all 0.2s ease;
+    }
+
+    .camera-btn:hover {
+      transform: translateY(-50%) scale(1.1);
+      color: #2575fc;
+    }
+
+    .scanning-loader {
+      display: none;
+      font-size: 13px;
+      color: #2575fc;
+      margin-top: 5px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    @media (max-width: 500px) {
+      .info-grid { grid-template-columns: 1fr; }
+      .full-width { grid-column: span 1; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container" id="mainContainer">
+    <div class="header-section">
+      <div class="header-logo-text">الجمهورية الجزائرية الديمقراطية الشعبية</div>
+      <h1 class="main-title">بوابة تحيين وضعية الموظف</h1>
+      
+      <div id="loginSection" style="margin-top: 40px;">
+        <div class="outer-group">
+          <label for="ccpInput">رقم الحساب البريدي الجاري (CCP)</label>
+          <input type="text" id="ccpInput" placeholder="أدخل الرقم بدون المفتاح" oninput="validateNumber(this)">
+        </div>
+        <button class="btn-main" onclick="checkEmployee()">تسجيل الدخول والتحقق</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAkQz9pB2ZNlYIvdlTRvi4try3D8LLXS4g",
+  authDomain: "databaseemploye.firebaseapp.com",
+  projectId: "databaseemploye",
+  storageBucket: "databaseemploye.firebasestorage.app",
+  messagingSenderId: "408231477466",
+  appId: "1:408231477466:web:e3bf5bd3eaca7cdcd3a5e3",
+  measurementId: "G-DW8QJ5B231"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const scriptURL = "https://script.google.com/macros/s/AKfycbwj95A1PV4atxKueEvFjt13OY8np1qH4gJV2W0L0zBjLH-si_RGl2JQZz8hehU5XrfU/exec";
+
+// --- بيانات البلديات ---
+window.baladiyaMap = {
+  "توقرت": ["توقرت", "النزلة", "تبسبست", "الزاوية العابدية"],
+  "تماسين": ["تماسين", "بلدة عمر"],
+  "المقارين": ["المقارين", "سيدي سليمان"],
+  "الحجيرة": ["الحجيرة", "العالية"],
+  "الطيبات": ["الطيبات", "المنقر", "ابن ناصر"]
+};
+
+// --- بيانات المؤسسات ---
+window.institutionsByDaaira = {
+  "توقرت": {
+    "ابتدائي": [
+       { name: "ابتدائية مثال 1 - توقرت" },
+       { name: "ابتدائية مثال 2 - توقرت" }
+    ],
+    "متوسط": [
+      { name: "متوسطة سعد بن أبي وقاص – توقرت" },
+      { name: "متوسطة الإمام علي – توقرت" },
+      { name: "متوسطة محمد الأمين العمودي – توقرت" },
+      { name: "متوسطة الشيخ المقراني – تبسبست" },
+      { name: "متوسطة بن هدية المدني – النزلة" },
+      { name: "متوسطة عبد الحميد بن باديس – توقرت" },
+      { name: "متوسطة حمزة بن عبد المطلب – الزاوية العابدية" },
+      { name: "متوسطة نصرات حشاني – تبسبست" },
+      { name: "متوسطة عيسات ايدير – البهجة تبسبست" },
+      { name: "متوسطة تجيني محمد – عين الصحراء النزلة" },
+      { name: "متوسطة ابن رشد – حي العرقوب توقرت" },
+      { name: "متوسطة رضا حوحو – الزاوية العابدية" },
+      { name: "متوسطة ميعادي فخر الدين – النزلة" },
+      { name: "متوسطة عطالي محمد الصغير – سيدي مهدي النزلة" },
+      { name: "متوسطة محمد عمران بوليفة – حي الرمال توقرت" },
+      { name: "متوسطة عبد المؤمن بن علي – النزلة" },
+      { name: "متوسطة بن الزاوي علي – تبسبست" },
+      { name: "متوسطة البشير الإبراهيمي – توقرت" },
+      { name: "متوسطة حي 5 جويلية – الزاوية العابدية" },
+      { name: "متوسطة بن حيزية عبد الله – عين الصحراء النزلة" },
+      { name: "متوسطة بن قلية محمد – الزاوية العابدية" },
+      { name: "متوسطة تمرني محمد – توقرت" },
+      { name: "متوسطة شاوش محمد – تبسبست" },
+      { name: "متوسطة المجاهد التجاني الصادق – النزلة" },
+      { name: "متوسطة خروبي محمد لخضر – النزلة" },
+      { name: "متوسطة المجاهد سبقاق العيد – توقرت" },
+      { name: "متوسطة دقعة الطاهر – تبسبست" },
+      { name: "متوسطة بدودة معمر بن علي – النزلة" },
+      { name: "متوسطة داشر الحاج – حي المستقبل توقرت" },
+      { name: "متوسطة المجاهد رواص محمد – حي المستقبل توقرت" },
+      { name: "متوسطة المجاهد بوليفة محمد العيد – حي المستقبل توقرت" },
+      { name: "متوسطة المجاهد عماري السايح – حي المستقبل توقرت" }
+    ],
+    "ثانوي": [
+      { name: "ثانوية الأمير عبد القادر – توقرت" },
+      { name: "ثانوية عبد الرحمان الكواكبي – تبسبست" },
+      { name: "ثانوية الحسن بن الهيثم – النزلة" },
+      { name: "ثانوية البشير الإبراهيمي – تبسبست" },
+      { name: "ثانوية هواري بومدين – الزاوية العابدية" },
+      { name: "ثانوية أبو بكر بلقايد – النزلة" },
+      { name: "ثانوية لزهاري تونسي – الزاوية العابدية" },
+      { name: "ثانوية بوخاري عبد المالك – النزلة" },
+      { name: "ثانوية عبودة علي – حي المستقبل توقرت" },
+      { name: "ثانوية مسغوني محمد الصالح – حي المستقبل" }
+    ]
+  },
+  "الحجيرة": {
+    "ابتدائي": [
+       { name: "ابتدائية مثال - الحجيرة" }
+    ],
+    "متوسط": [
+      { name: "متوسطة ابن سينا – الحجيرة" },
+      { name: "متوسطة لخضاري لخضر – العالية" },
+      { name: "متوسطة زوابري مسعود – لقراف الحجيرة" },
+      { name: "متوسطة السايح بن عيسى محمد السايح – العالية" },
+      { name: "متوسطة بن شويحة حمزة – الحجيرة" },
+      { name: "متوسطة شلغوم بشير – الشقة العالية" },
+      { name: "متوسطة المجاهد شعيب الأخضر – الحجيرة" }
+    ],
+    "ثانوي": [
+      { name: "ثانوية طارق بن زياد – الحجيرة" },
+      { name: "ثانوية بساسي محمد الصغير – العالية" },
+      { name: "ثانوية لحسيني محمد – الحجيرة" },
+      { name: "ثانوية بالضياف محمد – لقراف الحجيرة" }
+    ]
+  },
+  "الطيبات": {
+    "ابتدائي": [
+       { name: "ابتدائية مثال - الطيبات" }
+    ],
+    "متوسط": [
+      { name: "متوسطة أحمد زبانة – الطيبات" },
+      { name: "متوسطة موسى بن نصير – المنقر" },
+      { name: "متوسطة طارق بن زياد – بن ناصر" },
+      { name: "متوسطة نتاري محمد الدليلعي – الطيبات" },
+      { name: "متوسطة العقون محمد الكبير – الطيبات" },
+      { name: "متوسطة معمري محمد – بن ناصر" },
+      { name: "متوسطة العيد زقرير – المنقر" },
+      { name: "متوسطة بلعجال أحمد – الخبنة الطيبات" },
+      { name: "متوسطة المجاهد الخذير أحمد – المنقر" },
+      { name: "متوسطة المجاهد رابحي العيد – المنقر" },
+      { name: "متوسطة المجاهد بكاري عبد القادر – الدليليعي الطيبات" }
+    ],
+    "ثانوي": [
+      { name: "ثانوية ابن رشيق القيرواني – الطيبات" },
+      { name: "ثانوية المنقر – دقعة علي المنقر" },
+      { name: "ثانوية عبيد أحمد – بن ناصر" },
+      { name: "ثانوية زقوني الصغير – الدليليعي الطيبات" }
+    ]
+  },
+  "المقارين": {
+    "ابتدائي": [
+       { name: "ابتدائية مثال - المقارين" }
+    ],
+    "متوسط": [
+      { name: "متوسطة الفرابي – المقارين" },
+      { name: "متوسطة طفحي مسعود – سيدي سليمان" },
+      { name: "متوسطة بلحارث محمد السايح – سيدي سليمان" },
+      { name: "متوسطة سوفي الهاشمي – الطيبات" },
+      { name: "متوسطة الشهيد عبد الرحمان قوتال – القصور المقارين" },
+      { name: "متوسطة الشهيد أحميدة بوحفص – المقارين" },
+      { name: "متوسطة بركبية عبد الرزاق – المقارين" },
+      { name: "متوسطة الشهيد تماسيني عبد الرحمان – لهريهيرة المقارين" }
+    ],
+    "ثانوي": [
+      { name: "ثانوية خالد بن الوليد – المقارين" },
+      { name: "ثانوية بن عمر النوي – سيدي سليمان" },
+      { name: "ثانوية عميش سعدون – المقارين" }
+    ]
+  },
+  "تماسين": {
+    "ابتدائي": [
+       { name: "ابتدائية مثال - تماسين" }
+    ],
+    "متوسط": [
+      { name: "متوسطة عمر بن الخطاب – تماسين" },
+      { name: "متوسطة مولاتي محمد السايح – بلدة عمر" },
+      { name: "متوسطة أبو بكر الرازي – البحور تماسين" },
+      { name: "متوسطة قوني محمد الطيب – سيدي عامر تماسين" },
+      { name: "متوسطة معركة قرداش – بلدة عمر" },
+      { name: "متوسطة محمد الصديق بن يحي – حي الكدية تماسين" },
+      { name: "متوسطة بركة عبد الرزاق – قوق بلدة عمر" },
+      { name: "متوسطة بدودة السايح – تملاحت تماسين" },
+      { name: "متوسطة علي بن باديس – قوق بلدة عمر" }
+    ],
+    "ثانوي": [
+      { name: "ثانوية مفدي زكريا – تماسين" },
+      { name: "ثانوية العيد بن الصحراوي – بلدة عمر" },
+      { name: "ثانوية قويدري محمد العيد – تماسين" },
+      { name: "ثانوية تجيني محمد لخضر – بلدة عمر" },
+      { name: "ثانوية مالك بن نبي – قوق" }
+    ]
+  }
+};
+
+function validateNumber(input) { input.value = input.value.replace(/\D/g, ''); }
+
+function formatDate(dateInput) {
+  if (!dateInput) return ''; 
+  let dateObj;
+  if (dateInput && typeof dateInput.toDate === 'function') {
+    dateObj = dateInput.toDate();
+  } else {
+    dateObj = new Date(dateInput);
+  }
+  if (isNaN(dateObj.getTime())) return dateInput; 
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const year = dateObj.getFullYear();
+  return `${day}-${month}-${year}`;
+}
+
+async function checkEmployee() {
+  const ccp = document.getElementById("ccpInput").value.trim();
+  if (ccp.length < 3) { Swal.fire({ icon: 'warning', title: 'تنبيه', text: 'يرجى إدخال رقم CCP صحيح' }); return; }
+
+  Swal.fire({ title: 'جاري جلب البيانات...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+  try {
+    const docRef = db.collection("employeescompay").doc(ccp);
+    const docSnap = await docRef.get();
+
+    if (!docSnap.exists) {
+      Swal.close(); Swal.fire("❌ غير موجود", "رقم الحساب البريدي غير مسجل", "error"); return;
+    }
+
+    const firebaseData = docSnap.data();
+    const params = new URLSearchParams();
+    params.append("action", "check_existing");
+    params.append("ccp", ccp);
+
+    const res = await fetch(scriptURL, { method: "POST", body: params });
+    const result = await res.json();
+    Swal.close();
+
+    if (result.result === "exists") {
+      Swal.fire({
+        title: "⚠️ مسجل مسبقاً", text: "هل تريد تعديل المعلومات؟", icon: "info",
+        showCancelButton: true, confirmButtonText: "تعديل", cancelButtonText: "إلغاء", confirmButtonColor: "#ffc107"
+      }).then((ans) => { if (ans.isConfirmed) showForm(firebaseData, result.data, true); });
+    } else {
+      showForm(firebaseData, null, false);
+    }
+  } catch (error) {
+    Swal.close(); console.error(error); Swal.fire("خطأ", "فشل الاتصال بالخادم", "error");
+  }
+}
+
+function showForm(fbData, savedData, isEdit) {
+  const container = document.getElementById("mainContainer");
+  
+  const val_ccp = fbData.ccp || fbData.empId || '';
+  const val_adm = fbData.adm || '';
+  const val_mtr = fbData.mtr || '';
+  const val_fmn = fbData.fmn || '';
+  const val_frn = fbData.frn || '';
+  const val_diz = formatDate(fbData.diz) || '';
+  const val_nin = isEdit ? (savedData.nin || '') : '';
+  
+  container.innerHTML = `
+    <div class="header-section">
+      <h2 class="main-title">${isEdit ? 'تعديل البيانات' : 'استكمال المعلومات'}</h2>
+    </div>
+
+    <input type="hidden" id="admField" value="${val_adm}">
+    <input type="hidden" id="mtrField" value="${val_mtr}">
+
+    <div class="section-divider"><span class="section-title">البيانات الشخصية</span></div>
+
+    <div class="info-grid">
+      <div class="input-group full-width">
+        <label>الحساب البريدي (CCP)</label>
+        <input type="text" id="ccpField" value="${val_ccp}" readonly class="readonly-field">
+      </div>
+
+      <div class="input-group">
+        <label>اللقب (FMN)</label>
+        <input type="text" id="fmnField" value="${val_fmn}" readonly class="readonly-field">
+      </div>
+      <div class="input-group">
+        <label>الاسم (FRN)</label>
+        <input type="text" id="frnField" value="${val_frn}" readonly class="readonly-field">
+      </div>
+
+      <div class="input-group full-width">
+        <label>تاريخ الميلاد (DIZ)</label>
+        <input type="text" id="dizField" value="${val_diz}" readonly class="readonly-field" dir="ltr">
+      </div>
+    </div>
+
+    <div class="section-divider"><span class="section-title">بيانات التحيين</span></div>
+
+    <div class="outer-group">
+      <label>الطور التعليمي</label>
+      <select id="levelField" onchange="updateWorkPlace()">
+        <option value="">-- اختر الطور --</option>
+        <option value="ابتدائي">ابتدائي</option>
+        <option value="متوسط">متوسط</option>
+        <option value="ثانوي">ثانوي</option>
+      </select>
+    </div>
+
+    <div class="outer-group">
+      <label>الدائرة</label>
+      <select id="daairaField" onchange="updateBaladiya(); updateWorkPlace();">
+        <option value="">-- اختر الدائرة --</option>
+        <option value="توقرت">توقرت</option>
+        <option value="تماسين">تماسين</option>
+        <option value="المقارين">المقارين</option>
+        <option value="الحجيرة">الحجيرة</option>
+        <option value="الطيبات">الطيبات</option>
+      </select>
+    </div>
+
+    <div class="outer-group">
+      <label>البلدية</label>
+      <select id="baladiyaField">
+        <option value="">يرجى اختيار الدائرة أولاً</option>
+      </select>
+    </div>
+
+    <div class="outer-group">
+       <label>مكان العمل (المؤسسة)</label>
+       <div id="institutionArea">
+         <input type="text" placeholder="اختر الطور والدائرة..." readonly style="background:#fff; color:#999;">
+       </div>
+       <input type="hidden" id="institutionCodeField">
+    </div>
+
+    <div class="outer-group">
+       <label style="color:#d9534f;">رقم التعريف الوطني (NIN)</label>
+       <div class="input-icon-wrapper">
+         <button type="button" class="camera-btn" onclick="triggerCamera()" title="التقاط الرقم">
+            <i class="fa-solid fa-camera"></i>
+         </button>
+         <input type="text" id="ninField" value="${val_nin}" placeholder="18 رقم من بطاقة التعريف" oninput="validateNumber(this)">
+         <input type="file" id="cameraInput" accept="image/*" style="display: none;" onchange="processImage(this)">
+       </div>
+       <div id="scanStatus" class="scanning-loader"></div>
+    </div>
+
+    <button class="btn-main" onclick="submitData('${isEdit ? 'update' : 'register'}')">
+      ${isEdit ? 'حفظ التعديلات' : 'تأكيد المعلومات وحفظ'}
+    </button>
+  `;
+
+  if (isEdit && savedData) {
+    document.getElementById("levelField").value = savedData.level || "";
+    document.getElementById("daairaField").value = savedData.daaira || "";
+    updateBaladiya();
+    setTimeout(() => {
+      document.getElementById("baladiyaField").value = savedData.baladiya || "";
+      updateWorkPlace();
+      setTimeout(() => {
+        const activeSelect = document.getElementById("instSelect") || document.getElementById("primarySelect");
+        if (activeSelect && savedData.schoolCode) {
+           activeSelect.value = savedData.schoolCode; 
+           document.getElementById("institutionCodeField").value = savedData.schoolCode;
+        }
+      }, 200);
+    }, 100);
+  }
+}
+
+function updateBaladiya() {
+  const daaira = document.getElementById("daairaField").value;
+  const baladiyaSelect = document.getElementById("baladiyaField");
+  baladiyaSelect.innerHTML = '<option value="">-- اختر البلدية --</option>';
+  if (daaira && window.baladiyaMap[daaira]) {
+    window.baladiyaMap[daaira].forEach(b => {
+      const opt = document.createElement("option");
+      opt.value = b; opt.text = b; baladiyaSelect.add(opt);
+    });
+  }
+}
+
+function updateWorkPlace() {
+  const level = document.getElementById("levelField").value;
+  const daaira = document.getElementById("daairaField").value;
+  const area = document.getElementById("institutionArea");
+  const codeHidden = document.getElementById("institutionCodeField");
+  
+  area.innerHTML = ''; 
+  codeHidden.value = "";
+
+  if (!level || !daaira) {
+    area.innerHTML = `<input type="text" placeholder="اختر الطور والدائرة..." readonly style="background:#fff; color:#999;">`; 
+    return;
+  }
+  
+  const instData = window.institutionsByDaaira[daaira] || { "ابتدائي": [], "متوسط": [], "ثانوي": [] };
+
+  const createSelect = (id, placeholder, list) => {
+    const select = document.createElement("select");
+    select.id = id; 
+    select.onchange = function() { 
+      document.getElementById("institutionCodeField").value = this.value; 
+    };
+    select.innerHTML = `<option value="">${placeholder}</option>`;
+    list.forEach(i => { 
+      let opt = document.createElement("option"); 
+      opt.value = i.name; 
+      opt.text = i.name;  
+      select.add(opt); 
+    });
+    area.appendChild(select);
+  };
+
+  if (level === 'ابتدائي') {
+    createSelect("primarySelect", "-- اختر المدرسة الابتدائية --", instData["ابتدائي"] || []);
+  } else if (['متوسط', 'ثانوي'].includes(level)) {
+    createSelect("instSelect", "-- اختر المؤسسة --", instData[level] || []);
+  } else {
+     area.innerHTML = `<input type="text" placeholder="لا توجد بيانات..." readonly>`;
+  }
+}
+
+// --- دالة فتح الكاميرا واستخراج النص ---
+function triggerCamera() {
+  document.getElementById('cameraInput').click();
+}
+
+async function processImage(input) {
+  if (input.files && input.files[0]) {
+    const file = input.files[0];
+    const statusDiv = document.getElementById('scanStatus');
+    const ninInput = document.getElementById('ninField');
+    
+    statusDiv.style.display = 'block';
+    statusDiv.style.color = "#2575fc";
+    statusDiv.innerText = "⏳ جاري تحليل الصورة... يرجى الانتظار";
+
+    try {
+      const worker = await Tesseract.createWorker('eng'); 
+      await worker.setParameters({
+        tessedit_char_whitelist: '0123456789',
+      });
+
+      const { data: { text } } = await worker.recognize(file);
+      
+      const match = text.match(/\b\d{18}\b/);
+
+      if (match) {
+        ninInput.value = match[0];
+        statusDiv.style.color = "green";
+        statusDiv.innerText = "✅ تم استخراج الرقم بنجاح!";
+        setTimeout(() => { statusDiv.style.display = 'none'; }, 3000);
+      } else {
+        statusDiv.style.color = "red";
+        statusDiv.innerText = "❌ لم يتم العثور على رقم مكون من 18 خانة بوضوح.";
+      }
+      await worker.terminate();
+
+    } catch (error) {
+      console.error(error);
+      statusDiv.style.color = "red";
+      statusDiv.innerText = "❌ حدث خطأ أثناء المعالجة.";
+    }
+  }
+}
+
+async function submitData(action) {
+  const ccp = document.getElementById("ccpField").value;
+  const adm = document.getElementById("admField").value;
+  const mtr = document.getElementById("mtrField").value;
+  const fmn = document.getElementById("fmnField").value;
+  const frn = document.getElementById("frnField").value;
+  const diz = document.getElementById("dizField").value;
+  const nin = document.getElementById("ninField").value;
+  
+  const level = document.getElementById("levelField").value;
+  const daaira = document.getElementById("daairaField").value;
+  const baladiya = document.getElementById("baladiyaField").value;
+  const schoolCode = document.getElementById("institutionCodeField").value;
+
+  let schoolName = "";
+  const activeSelect = document.getElementById("instSelect") || document.getElementById("primarySelect");
+  if (activeSelect && activeSelect.selectedIndex > 0) schoolName = activeSelect.options[activeSelect.selectedIndex].text;
+
+  if (!level || !daaira || !baladiya || !schoolCode || !nin) {
+    Swal.fire("حقول ناقصة", "يرجى ملء كافة البيانات بما في ذلك المؤسسة ورقم التعريف.", "warning"); return;
+  }
+
+  Swal.fire({ title: 'جاري الحفظ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+  const params = new URLSearchParams();
+  params.append("action", action);
+  params.append("ccp", ccp);
+  params.append("adm", adm);
+  params.append("mtr", mtr);
+  params.append("fmn", fmn);
+  params.append("frn", frn);
+  params.append("diz", diz);
+  params.append("nin", nin);
+  params.append("level", level);
+  params.append("daaira", daaira);
+  params.append("baladiya", baladiya);
+  params.append("schoolName", schoolName);
+  params.append("schoolCode", schoolCode);
+
+  try {
+    const res = await fetch(scriptURL, { method: "POST", body: params });
+    const data = await res.json();
+    if (data.result === "success") {
+      Swal.fire({ title: "تم العملية بنجاح", text: "تم تحديث البيانات.", icon: "success", confirmButtonText: "حسناً" }).then(() => location.reload());
+    } else {
+      Swal.fire("خطأ", "حدث خطأ: " + (data.message || "غير معروف"), "error");
+    }
+  } catch (err) {
+    console.error(err); Swal.fire("خطأ", "تعذر الاتصال بالخادم", "error");
+  }
+}
+</script>
+
+</body>
+</html>
