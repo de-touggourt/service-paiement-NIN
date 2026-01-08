@@ -146,41 +146,263 @@
       text-align: center;
     }
 
+    /* واجهة الكاميرا الجديدة */
+    .camera-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      z-index: 9999;
+      flex-direction: column;
+    }
+
+    .camera-modal.active {
+      display: flex;
+    }
+
+    .camera-header {
+      background: rgba(0,0,0,0.8);
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+    }
+
+    .camera-header h3 {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .close-camera {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 5px 10px;
+    }
+
+    .camera-container {
+      flex: 1;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    #cameraVideo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .camera-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .overlay-frame {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 85%;
+      max-width: 400px;
+      aspect-ratio: 1.586;
+      border: 3px solid #2575fc;
+      border-radius: 12px;
+      box-shadow: 0 0 0 9999px rgba(0,0,0,0.6);
+    }
+
+    .overlay-corners {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+
+    .corner {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      border: 4px solid #2575fc;
+    }
+
+    .corner.top-left {
+      top: -4px;
+      left: -4px;
+      border-right: none;
+      border-bottom: none;
+      border-radius: 12px 0 0 0;
+    }
+
+    .corner.top-right {
+      top: -4px;
+      right: -4px;
+      border-left: none;
+      border-bottom: none;
+      border-radius: 0 12px 0 0;
+    }
+
+    .corner.bottom-left {
+      bottom: -4px;
+      left: -4px;
+      border-right: none;
+      border-top: none;
+      border-radius: 0 0 0 12px;
+    }
+
+    .corner.bottom-right {
+      bottom: -4px;
+      right: -4px;
+      border-left: none;
+      border-top: none;
+      border-radius: 0 0 12px 0;
+    }
+
+    .overlay-text {
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      text-align: center;
+      background: rgba(0,0,0,0.7);
+      padding: 10px 20px;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+
+    .camera-controls {
+      background: rgba(0,0,0,0.8);
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .camera-control-btn {
+      background: rgba(255,255,255,0.2);
+      border: 2px solid white;
+      color: white;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      font-size: 24px;
+      transition: all 0.3s;
+    }
+
+    .camera-control-btn:hover {
+      background: rgba(255,255,255,0.3);
+      transform: scale(1.1);
+    }
+
+    .camera-control-btn.capture {
+      width: 70px;
+      height: 70px;
+      background: #2575fc;
+      border-color: white;
+    }
+
+    .camera-control-btn.capture:hover {
+      background: #1a5fd9;
+    }
+
+    .camera-control-btn.gallery {
+      background: rgba(255,193,7,0.8);
+    }
+
+    /* معاينة الصورة الملتقطة */
     .image-preview-container {
       display: none;
       margin-top: 10px;
-      text-align: center;
+      border: 2px dashed #2575fc;
+      border-radius: 12px;
+      padding: 10px;
+      background: #f8f9fa;
     }
 
-    .image-preview {
-      max-width: 100%;
+    .image-preview-container.active {
+      display: block;
+    }
+
+    .image-preview-container img {
+      width: 100%;
       max-height: 200px;
+      object-fit: contain;
       border-radius: 8px;
-      border: 2px solid #e1e5eb;
-      margin-bottom: 10px;
     }
 
-    .retake-btn {
-      background: #ff6b6b;
-      color: white;
-      border: none;
+    .preview-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      justify-content: center;
+    }
+
+    .preview-btn {
       padding: 8px 16px;
+      border: none;
       border-radius: 8px;
-      cursor: pointer;
       font-family: 'Cairo', sans-serif;
       font-weight: 600;
+      cursor: pointer;
       font-size: 13px;
       transition: all 0.2s;
     }
 
-    .retake-btn:hover {
-      background: #ff5252;
-      transform: scale(1.05);
+    .preview-btn.retry {
+      background: #ffc107;
+      color: #333;
+    }
+
+    .preview-btn.retry:hover {
+      background: #ffb300;
+    }
+
+    .preview-btn.cancel {
+      background: #dc3545;
+      color: white;
+    }
+
+    .preview-btn.cancel:hover {
+      background: #c82333;
+    }
+
+    .preview-btn.process {
+      background: #28a745;
+      color: white;
+    }
+
+    .preview-btn.process:hover {
+      background: #218838;
+    }
+
+    /* Canvas مخفي للمعالجة */
+    #processingCanvas {
+      display: none;
     }
 
     @media (max-width: 500px) {
       .info-grid { grid-template-columns: 1fr; }
       .full-width { grid-column: span 1; }
+      .overlay-frame { width: 90%; }
+      .overlay-text { font-size: 14px; padding: 8px 15px; }
     }
   </style>
 </head>
@@ -201,6 +423,47 @@
       </div>
     </div>
   </div>
+
+  <!-- واجهة الكاميرا -->
+  <div class="camera-modal" id="cameraModal">
+    <div class="camera-header">
+      <h3>التقاط بطاقة التعريف</h3>
+      <button class="close-camera" onclick="closeCameraModal()">
+        <i class="fa-solid fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="camera-container">
+      <video id="cameraVideo" autoplay playsinline></video>
+      <div class="camera-overlay">
+        <div class="overlay-frame">
+          <div class="overlay-corners">
+            <div class="corner top-left"></div>
+            <div class="corner top-right"></div>
+            <div class="corner bottom-left"></div>
+            <div class="corner bottom-right"></div>
+          </div>
+        </div>
+        <div class="overlay-text">ضع بطاقة التعريف داخل الإطار</div>
+      </div>
+    </div>
+    
+    <div class="camera-controls">
+      <button class="camera-control-btn gallery" onclick="openGallery()" title="اختر من المعرض">
+        <i class="fa-solid fa-image"></i>
+      </button>
+      <button class="camera-control-btn capture" onclick="capturePhoto()" title="التقاط">
+        <i class="fa-solid fa-camera"></i>
+      </button>
+      <button class="camera-control-btn" onclick="switchCamera()" title="تبديل الكاميرا">
+        <i class="fa-solid fa-rotate"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Canvas للمعالجة -->
+  <canvas id="processingCanvas"></canvas>
+  <input type="file" id="galleryInput" accept="image/*" style="display: none;" onchange="handleGalleryImage(this)">
 
 <script>
 const firebaseConfig = {
@@ -368,6 +631,11 @@ window.institutionsByDaaira = {
   }
 };
 
+// --- متغيرات الكاميرا ---
+let cameraStream = null;
+let currentFacingMode = 'environment';
+let capturedImageBlob = null;
+
 function validateNumber(input) { input.value = input.value.replace(/\D/g, ''); }
 
 function formatDate(dateInput) {
@@ -505,18 +773,25 @@ function showForm(fbData, savedData, isEdit) {
     <div class="outer-group">
        <label style="color:#d9534f;">رقم التعريف الوطني (NIN)</label>
        <div class="input-icon-wrapper">
-         <button type="button" class="camera-btn" onclick="triggerCamera()" title="التقاط الرقم">
+         <button type="button" class="camera-btn" onclick="openCameraModal()" title="التقاط الرقم">
             <i class="fa-solid fa-camera"></i>
          </button>
          <input type="text" id="ninField" value="${val_nin}" placeholder="18 رقم من بطاقة التعريف" oninput="validateNumber(this)">
-         <input type="file" id="cameraInput" accept="image/*" style="display: none;" onchange="processImage(this)">
        </div>
        <div id="scanStatus" class="scanning-loader"></div>
-       <div id="imagePreviewContainer" class="image-preview-container">
-         <img id="imagePreview" class="image-preview" alt="معاينة الصورة">
-         <button type="button" class="retake-btn" onclick="retakeImage()">
-           <i class="fa-solid fa-rotate-right"></i> إعادة التقاط
-         </button>
+       <div id="imagePreview" class="image-preview-container">
+         <img id="previewImg" src="" alt="معاينة الصورة">
+         <div class="preview-actions">
+           <button class="preview-btn process" onclick="processCurrentImage()">
+             <i class="fa-solid fa-wand-magic-sparkles"></i> معالجة الصورة
+           </button>
+           <button class="preview-btn retry" onclick="openCameraModal()">
+             <i class="fa-solid fa-rotate-right"></i> إعادة التقاط
+           </button>
+           <button class="preview-btn cancel" onclick="cancelCapture()">
+             <i class="fa-solid fa-times"></i> إلغاء
+           </button>
+         </div>
        </div>
     </div>
 
@@ -596,151 +871,307 @@ function updateWorkPlace() {
   }
 }
 
-// --- دالة فتح الكاميرا ---
-function triggerCamera() {
-  document.getElementById('cameraInput').click();
-}
-
-// --- دالة إعادة التقاط الصورة ---
-function retakeImage() {
-  document.getElementById('imagePreviewContainer').style.display = 'none';
-  document.getElementById('cameraInput').value = '';
-  triggerCamera();
-}
-
-// --- دالة معالجة الصورة المحسّنة ---
-async function processImage(input) {
-  if (input.files && input.files[0]) {
-    const file = input.files[0];
-    const statusDiv = document.getElementById('scanStatus');
-    const ninInput = document.getElementById('ninField');
-    const previewContainer = document.getElementById('imagePreviewContainer');
-    const previewImg = document.getElementById('imagePreview');
-    
-    // عرض معاينة الصورة
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      previewImg.src = e.target.result;
-      previewContainer.style.display = 'block';
-    };
-    reader.readAsDataURL(file);
-    
-    statusDiv.style.display = 'block';
-    statusDiv.style.color = "#2575fc";
-    statusDiv.innerText = "⏳ جاري معالجة الصورة وتحليلها... يرجى الانتظار";
-
-    try {
-      // معالجة الصورة باستخدام Canvas لتحسين الجودة
-      const processedImage = await preprocessImage(file);
-      
-      // إنشاء worker مع دعم اللغتين العربية والإنجليزية
-      statusDiv.innerText = "⏳ جاري تحميل محرك التعرف على النصوص...";
-      const worker = await Tesseract.createWorker(['ara', 'eng']);
-      
-      // تعيين معاملات OCR المتقدمة
-      await worker.setParameters({
-        tessedit_pageseg_mode: Tesseract.PSM.AUTO,
-        tessedit_char_whitelist: '0123456789',
-      });
-
-      statusDiv.innerText = "⏳ جاري استخراج الأرقام من الصورة...";
-      
-      // محاولة التعرف على النص من الصورة المعالجة
-      const { data: { text } } = await worker.recognize(processedImage);
-      
-      // البحث عن رقم مكون من 18 خانة
-      // نبحث عن الأرقام المتتالية ونزيل المسافات والفواصل
-      const cleanedText = text.replace(/[\s\-_.,]/g, '');
-      const match = cleanedText.match(/\d{18}/);
-
-      if (match) {
-        ninInput.value = match[0];
-        statusDiv.style.color = "green";
-        statusDiv.innerText = "✅ تم استخراج الرقم الوطني بنجاح!";
-        setTimeout(() => { statusDiv.style.display = 'none'; }, 4000);
-      } else {
-        // إذا لم نجد 18 رقماً، نبحث عن أطول سلسلة أرقام
-        const allNumbers = cleanedText.match(/\d+/g);
-        if (allNumbers && allNumbers.length > 0) {
-          const longest = allNumbers.reduce((a, b) => a.length > b.length ? a : b);
-          if (longest.length >= 16) {
-            ninInput.value = longest;
-            statusDiv.style.color = "orange";
-            statusDiv.innerText = `⚠️ تم العثور على ${longest.length} رقم. يرجى التحقق من الصحة.`;
-          } else {
-            statusDiv.style.color = "red";
-            statusDiv.innerText = "❌ لم يتم العثور على رقم مكون من 18 خانة. يرجى إعادة المحاولة بصورة أوضح.";
-          }
-        } else {
-          statusDiv.style.color = "red";
-          statusDiv.innerText = "❌ لم يتم العثور على أي أرقام في الصورة. يرجى التأكد من وضوح الصورة.";
-        }
+// --- دوال الكاميرا ---
+async function openCameraModal() {
+  const modal = document.getElementById('cameraModal');
+  const video = document.getElementById('cameraVideo');
+  
+  modal.classList.add('active');
+  
+  try {
+    const constraints = {
+      video: {
+        facingMode: currentFacingMode,
+        width: { ideal: 1920 },
+        height: { ideal: 1080 }
       }
-      
-      await worker.terminate();
-
-    } catch (error) {
-      console.error('خطأ في معالجة الصورة:', error);
-      statusDiv.style.color = "red";
-      statusDiv.innerText = "❌ حدث خطأ أثناء المعالجة. يرجى المحاولة مرة أخرى.";
-    }
+    };
+    
+    cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+    video.srcObject = cameraStream;
+  } catch (error) {
+    console.error('خطأ في فتح الكاميرا:', error);
+    Swal.fire('خطأ', 'لا يمكن الوصول إلى الكاميرا. يرجى التحقق من الأذونات.', 'error');
+    closeCameraModal();
   }
 }
 
-// --- دالة معالجة الصورة مسبقاً لتحسين جودة OCR ---
-function preprocessImage(file) {
+function closeCameraModal() {
+  const modal = document.getElementById('cameraModal');
+  const video = document.getElementById('cameraVideo');
+  
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+  }
+  
+  video.srcObject = null;
+  modal.classList.remove('active');
+}
+
+async function switchCamera() {
+  currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+  
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+  }
+  
+  await openCameraModal();
+}
+
+function capturePhoto() {
+  const video = document.getElementById('cameraVideo');
+  const canvas = document.getElementById('processingCanvas');
+  const ctx = canvas.getContext('2d');
+  
+  // تعيين حجم Canvas بنفس حجم الفيديو
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  
+  // رسم الصورة من الفيديو
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  
+  // اقتصاص المنطقة المحددة بالإطار (منتصف الصورة)
+  const frameWidth = canvas.width * 0.85;
+  const frameHeight = frameWidth / 1.586;
+  const frameX = (canvas.width - frameWidth) / 2;
+  const frameY = (canvas.height - frameHeight) / 2;
+  
+  // إنشاء canvas جديد للصورة المقصوصة
+  const croppedCanvas = document.createElement('canvas');
+  croppedCanvas.width = frameWidth;
+  croppedCanvas.height = frameHeight;
+  const croppedCtx = croppedCanvas.getContext('2d');
+  
+  croppedCtx.drawImage(
+    canvas,
+    frameX, frameY, frameWidth, frameHeight,
+    0, 0, frameWidth, frameHeight
+  );
+  
+  // تحويل إلى blob
+  croppedCanvas.toBlob(function(blob) {
+    capturedImageBlob = blob;
+    
+    // عرض المعاينة
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const previewContainer = document.getElementById('imagePreview');
+      const previewImg = document.getElementById('previewImg');
+      previewImg.src = e.target.result;
+      previewContainer.classList.add('active');
+    };
+    reader.readAsDataURL(blob);
+    
+    // إغلاق الكاميرا
+    closeCameraModal();
+    
+    // معالجة الصورة تلقائياً
+    processCurrentImage();
+  }, 'image/jpeg', 0.95);
+}
+
+function openGallery() {
+  closeCameraModal();
+  document.getElementById('galleryInput').click();
+}
+
+function handleGalleryImage(input) {
+  if (input.files && input.files[0]) {
+    capturedImageBlob = input.files[0];
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const previewContainer = document.getElementById('imagePreview');
+      const previewImg = document.getElementById('previewImg');
+      previewImg.src = e.target.result;
+      previewContainer.classList.add('active');
+    };
+    reader.readAsDataURL(capturedImageBlob);
+  }
+}
+
+function cancelCapture() {
+  document.getElementById('imagePreview').classList.remove('active');
+  document.getElementById('scanStatus').style.display = 'none';
+  capturedImageBlob = null;
+}
+
+async function processCurrentImage() {
+  if (!capturedImageBlob) {
+    Swal.fire('تنبيه', 'يرجى التقاط صورة أولاً', 'warning');
+    return;
+  }
+  
+  const statusDiv = document.getElementById('scanStatus');
+  const ninInput = document.getElementById('ninField');
+  
+  statusDiv.style.display = 'block';
+  statusDiv.style.color = "#2575fc";
+  statusDiv.innerText = "⏳ جاري معالجة الصورة وتحليلها... يرجى الانتظار";
+
+  try {
+    // معالجة الصورة مسبقاً
+    const processedImage = await preprocessImageAdvanced(capturedImageBlob);
+    
+    statusDiv.innerText = "⏳ جاري تحميل محرك التعرف على النصوص...";
+    const worker = await Tesseract.createWorker('ara+eng');
+    
+    // المحاولة الأولى: التركيز على المنطقة الوسطى
+    await worker.setParameters({
+      tessedit_char_whitelist: '0123456789',
+      tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK,
+    });
+
+    statusDiv.innerText = "⏳ جاري استخراج الرقم الوطني من البطاقة...";
+    
+    let { data: { text, confidence } } = await worker.recognize(processedImage);
+    let match = extractNINFromText(text);
+    
+    // المحاولة الثانية إذا فشلت الأولى
+    if (!match) {
+      statusDiv.innerText = "⏳ محاولة ثانية بإعدادات مختلفة...";
+      await worker.setParameters({
+        tessedit_char_whitelist: '0123456789',
+        tessedit_pageseg_mode: Tesseract.PSM.SPARSE_TEXT,
+      });
+      const result2 = await worker.recognize(processedImage);
+      text = result2.data.text;
+      confidence = result2.data.confidence;
+      match = extractNINFromText(text);
+    }
+    
+    // المحاولة الثالثة مع الصورة الأصلية
+    if (!match) {
+      statusDiv.innerText = "⏳ محاولة ثالثة مع الصورة الأصلية...";
+      const result3 = await worker.recognize(capturedImageBlob);
+      text = result3.data.text;
+      confidence = result3.data.confidence;
+      match = extractNINFromText(text);
+    }
+
+    await worker.terminate();
+
+    if (match) {
+      ninInput.value = match;
+      statusDiv.style.color = "green";
+      const confidencePercent = Math.round(confidence);
+      statusDiv.innerText = `✅ تم استخراج الرقم بنجاح: ${match} (دقة: ${confidencePercent}%)`;
+      setTimeout(() => { 
+        statusDiv.style.display = 'none'; 
+        document.getElementById('imagePreview').classList.remove('active');
+      }, 5000);
+    } else {
+      statusDiv.style.color = "red";
+      statusDiv.innerText = "❌ لم يتم العثور على رقم مكون من 18 خانة. يرجى إعادة المحاولة بصورة أوضح أو إدخال الرقم يدوياً.";
+    }
+
+  } catch (error) {
+    console.error('خطأ في معالجة الصورة:', error);
+    statusDiv.style.color = "red";
+    statusDiv.innerText = "❌ حدث خطأ أثناء المعالجة. يرجى المحاولة مرة أخرى.";
+  }
+}
+
+// دالة استخراج الرقم الوطني من النص
+function extractNINFromText(text) {
+  // إزالة كل المسافات والفواصل والرموز
+  const cleanedText = text.replace(/[\s\-_.,\/\\|]/g, '');
+  
+  // البحث عن 18 رقماً متتالياً
+  let match = cleanedText.match(/\d{18}/);
+  if (match) return match[0];
+  
+  // البحث عن أطول سلسلة أرقام
+  const allNumbers = cleanedText.match(/\d+/g);
+  if (allNumbers && allNumbers.length > 0) {
+    const longest = allNumbers.reduce((a, b) => a.length > b.length ? a : b);
+    if (longest.length >= 16) {
+      // إذا كان 16 أو 17 رقم، نحاول إيجاد الأرقام المفقودة
+      if (longest.length === 16 || longest.length === 17) {
+        // نبحث في النص الأصلي عن أرقام قريبة
+        const index = text.indexOf(longest);
+        if (index !== -1) {
+          const before = text.substring(Math.max(0, index - 5), index).match(/\d/g);
+          const after = text.substring(index + longest.length, index + longest.length + 5).match(/\d/g);
+          
+          let result = longest;
+          if (before && before.length > 0) result = before.join('') + result;
+          if (after && after.length > 0) result = result + after.join('');
+          
+          if (result.length >= 18) return result.substring(0, 18);
+        }
+      }
+      return longest;
+    }
+  }
+  
+  return null;
+}
+
+// دالة معالجة الصورة المتقدمة
+async function preprocessImageAdvanced(blob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    
     reader.onload = function(e) {
       const img = new Image();
-      
       img.onload = function() {
-        // إنشاء canvas لمعالجة الصورة
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
-        // تكبير الصورة إذا كانت صغيرة لتحسين الدقة
-        const scale = Math.max(1, 2000 / Math.max(img.width, img.height));
+        // تكبير الصورة لتحسين الدقة
+        const scale = 2.5;
         canvas.width = img.width * scale;
         canvas.height = img.height * scale;
         
-        // رسم الصورة
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         
-        // الحصول على بيانات الصورة
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        // التركيز على المنطقة الوسطى (حيث يوجد الرقم الوطني)
+        const centerWidth = canvas.width * 0.8;
+        const centerHeight = canvas.height * 0.4;
+        const centerX = (canvas.width - centerWidth) / 2;
+        const centerY = (canvas.height - centerHeight) / 2;
+        
+        const imageData = ctx.getImageData(centerX, centerY, centerWidth, centerHeight);
         const data = imageData.data;
         
-        // تحويل الصورة إلى أبيض وأسود وزيادة التباين
+        // تحسين التباين والسطوع
         for (let i = 0; i < data.length; i += 4) {
-          // حساب متوسط RGB (تحويل إلى رمادي)
-          const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+          let r = data[i];
+          let g = data[i + 1];
+          let b = data[i + 2];
           
-          // زيادة التباين: إذا كان اللون فاتحاً، اجعله أبيض، وإلا اجعله أسود
-          const threshold = 128;
-          const value = avg > threshold ? 255 : 0;
+          // تحويل إلى grayscale
+          let gray = 0.299 * r + 0.587 * g + 0.114 * b;
           
-          data[i] = value;     // Red
-          data[i + 1] = value; // Green
-          data[i + 2] = value; // Blue
+          // زيادة التباين
+          gray = ((gray - 128) * 1.5) + 128;
+          
+          // تطبيق threshold
+          const threshold = 140;
+          const value = gray > threshold ? 255 : 0;
+          
+          data[i] = value;
+          data[i + 1] = value;
+          data[i + 2] = value;
         }
         
-        // إعادة وضع البيانات المعالجة
-        ctx.putImageData(imageData, 0, 0);
+        // إنشاء canvas جديد للصورة المعالجة
+        const finalCanvas = document.createElement('canvas');
+        finalCanvas.width = centerWidth;
+        finalCanvas.height = centerHeight;
+        const finalCtx = finalCanvas.getContext('2d');
+        finalCtx.putImageData(imageData, 0, 0);
         
-        // تحويل Canvas إلى Blob
-        canvas.toBlob(function(blob) {
+        finalCanvas.toBlob(function(blob) {
           resolve(blob);
         }, 'image/png');
       };
-      
       img.onerror = reject;
       img.src = e.target.result;
     };
-    
     reader.onerror = reject;
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(blob);
   });
 }
 
