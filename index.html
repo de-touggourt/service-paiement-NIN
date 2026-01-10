@@ -49,21 +49,15 @@
       box-shadow: 0 15px 40px rgba(0,0,0,0.2);
       text-align: center;
       width: 100%;
-      
-      /* العرض الافتراضي للدخول 500 بيكسل */
       max-width: 500px; 
       margin: 0 auto;
-      
-      /* حركة ناعمة عند التكبير */
       transition: max-width 0.5s cubic-bezier(0.25, 1, 0.5, 1), padding 0.3s ease;
     }
 
-    /* كلاس إضافي يتم تفعيله عند الدخول لتكبير الكونتينر */
     .container.expanded-mode {
         max-width: 700px !important;
     }
 
-    /* كلاس خاص بالهيدر للتحكم في إخفائه */
     .page-header { text-align: center; margin-bottom: 25px; transition: opacity 0.3s ease; }
     
     .page-header .header-logo {
@@ -185,7 +179,6 @@
       @page { margin: 0; size: A4; }
       body { background: white; margin: 0; padding: 0; display: block; }
       
-      /* إخفاء كل عناصر الواجهة بما فيها الهيدر */
       .container, .swal2-container, .page-header, .header-text, .header-logo, .gradient-title, #loginSection { 
         display: none !important; 
       }
@@ -362,7 +355,8 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-const scriptURL = "https://script.google.com/macros/s/AKfycbyfZYHEM2gapGT47A8hywtqhhxjXHspJO1t_9hy8CrCSnwDISrHvMGwYSS16YyhGwecJw/exec";
+// 🛑🛑🛑 استبدل هذا الرابط برابط السكريبت الخاص بك 🛑🛑🛑
+const scriptURL = "https://script.google.com/macros/s/AKfycbxhTB6G77YGS_zQDSeIPoICvbbiEwae4zvGyjKw35c37xuQc3gok5x_wFg6m9eyMnITzw/exec";
 
 // --- خريطة الرتب ---
 const gradeMap = {
@@ -527,7 +521,6 @@ const valNum = (e) => e.value = e.value.replace(/\D/g, '');
 const valAr = (e) => e.value = e.value.replace(/[^\u0600-\u06FF\s]/g, '');
 const getJob = (c) => gradeMap[c] || "غير محدد";
 
-// دالة لإزالة الخطأ عند الكتابة
 const removeError = (input) => {
   if (input.classList.contains("input-error")) {
     input.classList.remove("input-error");
@@ -546,16 +539,27 @@ const fmtDate = (d) => {
   } catch (e) { return ""; }
 };
 
+// دالة الحصول على الوقت والتاريخ بتنسيق دقيق
+function getCurrentDateTime() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
 let currentEmployeeData = null;
 
-// ✅ تفعيل زر Enter للدخول
 window.onload = function() {
     const ccpInput = document.getElementById("ccpInput");
     if(ccpInput) {
         ccpInput.addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
-                event.preventDefault(); // منع السلوك الافتراضي
-                document.getElementById("loginBtn").click(); // محاكاة النقر على الزر
+                event.preventDefault(); 
+                document.getElementById("loginBtn").click(); 
             }
         });
     }
@@ -740,8 +744,15 @@ function showConfirmerInput(data) {
         preConfirm: () => {
             const name = document.getElementById('swal-name').value.trim();
             const phone = document.getElementById('swal-phone').value.trim();
+            
             if (!name) { Swal.showValidationMessage('يرجى إدخال اسم المؤكد'); return false; }
-            if (phone.length !== 10) { Swal.showValidationMessage('رقم الهاتف يجب أن يتكون من 10 أرقام'); return false; }
+            
+            const phoneRegex = /^(05|06|07)[0-9]{8}$/;
+            if (!phoneRegex.test(phone)) {
+                Swal.showValidationMessage('رقم الهاتف غير صحيح (يجب أن يبدأ بـ 05، 06، 07 ويتكون من 10 أرقام)');
+                return false;
+            }
+            
             return { name, phone };
         }
     }).then((res) => {
@@ -758,17 +769,6 @@ function showConfirmerInput(data) {
 // 4️⃣ المؤكد
 function showConfirmedModal(data) {
   document.getElementById("interfaceCard").classList.add("expanded-mode");
-
-  let formattedDate = "---";
-  if (data.modDate) {
-    const dObj = new Date(data.modDate);
-    if (!isNaN(dObj.getTime())) {
-      const day = String(dObj.getDate()).padStart(2, '0');
-      const month = String(dObj.getMonth() + 1).padStart(2, '0'); 
-      const year = dObj.getFullYear();
-      formattedDate = `${day}-${month}-${year}`; 
-    }
-  }
 
   const htmlTable = `
     <div class="swal-table-container">
@@ -812,27 +812,38 @@ function showConfirmedModal(data) {
   });
 }
 
-// 5️⃣ التأكيد
+// 5️⃣ التأكيد - (يسجل تاريخ التأكيد فقط)
+// 5️⃣ التأكيد - (الكود المصحح)
 async function confirmData(data) {
   Swal.fire({ title: 'جاري التأكيد...', didOpen:()=>Swal.showLoading(), allowOutsideClick: false });
   
   data.confirmed = true; 
 
   const params = new URLSearchParams();
+  
+  // نسخ البيانات ما عدا التواريخ لضمان عدم إرسال قيم قديمة أو فارغة بالخطأ
   for(let k in data) {
     if(data[k] !== null && data[k] !== undefined) {
+       // 🛑 التعديل هنا: استثناء تاريخ التأكيد القديم أيضاً 🛑
+       if (k === "date_edit" || k === "date_confirm") continue; 
+       
        params.append(k, data[k]);
     }
   }
 
   params.set("action", "update");
   params.set("confirmed", "true"); 
+  
+  // ✅ تسجيل تاريخ التأكيد الجديد الآن سيتم قراءته بشكل صحيح
+  const confirmTime = getCurrentDateTime();
+  params.append("date_confirm", confirmTime);
 
   try {
     const res = await fetch(scriptURL, { method: "POST", body: params });
     const result = await res.json();
     
     if(result.result === "success") {
+      data.date_confirm = confirmTime;
       currentEmployeeData = data;
       
       Swal.fire({
@@ -910,7 +921,7 @@ function fillForm(fbData, savedData) {
   }
 }
 
-// 7️⃣ إرسال التسجيل (مُحسنة للتحقق)
+// 7️⃣ إرسال التسجيل أو التعديل
 async function submitRegistration() {
   const fmn = document.getElementById("fmnField");
   const frn = document.getElementById("frnField");
@@ -924,11 +935,9 @@ async function submitRegistration() {
   const codeField = document.getElementById("institutionCodeField");
   const schoolSelect = document.querySelector("#institutionArea select");
   
-  // 1. إعادة ضبط الأخطاء
   [fmn, frn, diz, level, daaira, baladiya, phone, nin].forEach(el => el.classList.remove("input-error"));
   document.getElementById("institutionArea").style.border = "none";
 
-  // 2. التحقق من الحقول الفارغة
   let hasEmpty = false;
   const fieldsToCheck = [fmn, frn, diz, level, daaira, baladiya, phone, nin];
   fieldsToCheck.forEach(field => {
@@ -938,62 +947,30 @@ async function submitRegistration() {
     }
   });
 
-  // ✅ تصحيح التحقق من مؤسسة العمل:
-  // إذا لم يكن هناك قائمة منسدلة (أي أن المستخدم لم يختر الطور بعد)
-  // أو إذا كانت هناك قائمة ولكن القيمة فارغة (المستخدم تركها على "-- اختر --")
   if (!schoolSelect || schoolSelect.value === "") {
-     document.getElementById("institutionArea").style.border = "2px solid #dc3545"; // تلوين الإطار بالأحمر
-     document.getElementById("institutionArea").style.borderRadius = "8px"; // تحسين الحواف
-     document.getElementById("institutionArea").style.padding = "2px"; // إضافة مسافة صغيرة
+     document.getElementById("institutionArea").style.border = "2px solid #dc3545"; 
      hasEmpty = true;
-  } else {
-     document.getElementById("institutionArea").style.border = "none";
-     document.getElementById("institutionArea").style.padding = "0";
   }
 
   if(hasEmpty) {
-    return Swal.fire({
-      icon: 'error',
-      title: 'حقول فارغة',
-      text: 'يرجى ملء جميع الحقول الملونة بالأحمر.',
-      confirmButtonText: 'حسناً'
-    });
+    return Swal.fire({ icon: 'error', title: 'حقول ناقصة', text: 'يرجى ملء جميع الحقول الملونة بالأحمر.' });
   }
 
-  // 3. التحقق من سنة الميلاد (يجب أن لا تكون أكبر من 2006)
   const birthDate = new Date(diz.value);
-  const birthYear = birthDate.getFullYear();
-  if(isNaN(birthYear) || birthYear > 2005) {
+  if(isNaN(birthDate.getFullYear()) || birthDate.getFullYear() > 2005) {
       diz.classList.add("input-error");
-      return Swal.fire({
-        icon: 'warning',
-        title: 'تاريخ الميلاد غير صحيح',
-        text: 'يجب مراجعة تاريخ الميلاد والتحقق منه.'
-      });
+      return Swal.fire({ icon: 'warning', title: 'تاريخ الميلاد غير صحيح' });
   }
-
-  // 4. التحقق من رقم الهاتف (يجب أن يبدأ بـ 05، 06، 07 ويتكون من 10 أرقام)
   const phoneRegex = /^(05|06|07)[0-9]{8}$/;
   if(!phoneRegex.test(phone.value)) {
       phone.classList.add("input-error");
-      return Swal.fire({
-        icon: 'warning',
-        title: 'رقم الهاتف غير صحيح',
-        text: 'يجب أن يتكون رقم الهاتف من 10 أرقام ويبدأ بـ 05، 06، أو 07.'
-      });
+      return Swal.fire({ icon: 'warning', title: 'رقم الهاتف غير صحيح' });
   }
-
-  // 5. التحقق من رقم التعريف الوطني (يجب أن يكون 18 رقم بالضبط)
   if(nin.value.length !== 18) {
       nin.classList.add("input-error");
-      return Swal.fire({
-        icon: 'warning',
-        title: 'رقم التعريف غير صحيح',
-        text: 'يجب أن يتكون رقم التعريف الوطني من 18 رقماً بالضبط.'
-      });
+      return Swal.fire({ icon: 'warning', title: 'رقم التعريف الوطني غير صحيح' });
   }
 
-  // --- إذا نجحت كل التحققات، إبدأ التجهيز للإرسال ---
   const p = new URLSearchParams();
   p.append("ccp", document.getElementById("ccpField").value);
   p.append("ass", document.getElementById("assField").value);
@@ -1017,7 +994,17 @@ async function submitRegistration() {
   const action = currentEmployeeData ? "update" : "register";
   p.set("action", action);
   p.set("confirmed", "false"); 
+
+  // 🔥 الفصل في المنطق: إذا كان تحديثاً نرسل تاريخ التعديل، إذا جديد لا نرسله
+  if (action === "update") {
+      p.append("date_edit", getCurrentDateTime());
+  } else {
+      p.append("date_edit", ""); // جديد: لا يوجد تعديل
+  }
   
+  // في مرحلة الحفظ، لا نرسل تاريخ التأكيد
+  p.append("date_confirm", "");
+
   if (currentEmployeeData && currentEmployeeData.confirmed_by) {
       p.append("confirmed_by", currentEmployeeData.confirmed_by);
   }
@@ -1038,7 +1025,6 @@ async function submitRegistration() {
           if(!newData.confirmed_by) newData.confirmed_by = currentEmployeeData.confirmed_by || "";
           if(!newData.reviewer_phone) newData.reviewer_phone = currentEmployeeData.reviewer_phone || "";
       }
-      
       currentEmployeeData = newData; 
       
       showReviewModal(newData, "new");
@@ -1089,16 +1075,12 @@ function updateWorkPlace() {
   
   area.innerHTML = ''; 
   
-  // ✅ دالة إنشاء القائمة المنسدلة مع تعيين قيمة فارغة للخيار الأول
   const mkSel = (lst) => {
     let s = document.createElement("select");
-    // هنا التعديل المهم: value=""
     s.innerHTML = '<option value="">-- اختر --</option>';
     
     s.onchange = function() {
-        // عند التغيير، إذا اختار "-- اختر --" ستكون القيمة فارغة، وإلا ستكون اسم المؤسسة
         document.getElementById("institutionCodeField").value = this.value;
-        // إزالة الإطار الأحمر عند الاختيار الصحيح
         if(this.value !== "") {
              document.getElementById("institutionArea").style.border = "none";
         }
